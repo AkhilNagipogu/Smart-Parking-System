@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ParkFlow — Smart Parking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #F4F3EE;
+  --surface:    #FFFFFF;
+  --surface2:   #EDECEA;
+  --surface3:   #E4E3DF;
+  --text:       #18180F;
+  --text2:      #58584F;
+  --text3:      #98988E;
+  --border:     rgba(0,0,0,0.08);
+  --border2:    rgba(0,0,0,0.15);
+  --accent:     #1A9B72;
+  --accent2:    #148A62;
+  --accent-bg:  #E2F5EE;
+  --accent-text:#0C6647;
+  --red:        #D94040;
+  --red-bg:     #FBEAEA;
+  --red-text:   #8B1A1A;
+  --amber:      #C07B10;
+  --amber-bg:   #FDF0DA;
+  --amber-text: #7A4B00;
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow:     0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg:  0 12px 32px rgba(0,0,0,0.10);
+  --radius:     14px;
+  --radius-sm:  9px;
+  --radius-lg:  20px;
+  --nav-h:      62px;
+  --font:       'DM Sans', sans-serif;
+  --font-d:     'Syne', sans-serif;
+  --ease:       cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-theme="dark"] {
+  --bg:         #111110;
+  --surface:    #1B1B18;
+  --surface2:   #242420;
+  --surface3:   #2E2E29;
+  --text:       #EEEEE8;
+  --text2:      #9A9A90;
+  --text3:      #5A5A52;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(255,255,255,0.13);
+  --accent:     #3DBB90;
+  --accent2:    #2FA97E;
+  --accent-bg:  #052E22;
+  --accent-text:#7ADCB8;
+  --red:        #E87070;
+  --red-bg:     #2E0A0A;
+  --red-text:   #F0AAAA;
+  --amber:      #E8A030;
+  --amber-bg:   #2A1500;
+  --amber-text: #F0C070;
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.4);
+  --shadow:     0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg:  0 12px 32px rgba(0,0,0,0.5);
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ── NAV ── */
+.nav {
+  position: sticky; top: 0; z-index: 200;
+  height: var(--nav-h);
+  background: rgba(244,243,238,0.88);
+  backdrop-filter: blur(16px) saturate(1.5);
+  border-bottom: 0.5px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 28px; gap: 0;
+  transition: background 0.3s;
+}
+[data-theme="dark"] .nav { background: rgba(17,17,16,0.88); }
+
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; flex-shrink: 0; margin-right: auto;
+}
+.nav-logo-mark {
+  width: 34px; height: 34px;
+  background: var(--text); border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background 0.3s;
+}
+.nav-logo-mark svg { fill: var(--bg); transition: fill 0.3s; }
+.nav-logo-name {
+  font-family: var(--font-d); font-size: 18px; font-weight: 800;
+  color: var(--text); letter-spacing: -0.02em;
+}
+.nav-logo-name em { color: var(--accent); font-style: normal; }
+
+.nav-right { display: flex; align-items: center; gap: 12px; }
+
+.fb-status {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--text3); font-weight: 500;
+  background: var(--surface); border: 0.5px solid var(--border);
+  padding: 6px 12px; border-radius: 20px;
+}
+.fb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+.fb-dot.connected { background: var(--accent); animation: pulse 2s infinite; }
+.fb-dot.error { background: var(--red); }
+
+.theme-btn {
+  width: 36px; height: 36px;
+  background: var(--surface2); border: 0.5px solid var(--border);
+  border-radius: 9px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; transition: background 0.15s; flex-shrink: 0;
+}
+.theme-btn:hover { background: var(--surface3); }
+
+/* ── HERO ── */
+.hero {
+  max-width: 900px; margin: 0 auto;
+  padding: 56px 28px 32px;
+  text-align: center;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent-bg); color: var(--accent-text);
+  font-size: 12px; font-weight: 600; font-family: var(--font-d);
+  padding: 5px 14px; border-radius: 20px; margin-bottom: 20px;
+  border: 0.5px solid rgba(26,155,114,0.18); letter-spacing: 0.02em;
+}
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent); flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+.hero h1 {
+  font-family: var(--font-d); font-size: clamp(32px, 5vw, 52px);
+  font-weight: 800; line-height: 1.08; letter-spacing: -0.03em;
+  color: var(--text); margin-bottom: 14px;
+}
+.hero h1 em { color: var(--accent); font-style: normal; }
+.hero-sub { font-size: 15px; color: var(--text2); max-width: 480px; margin: 0 auto; }
+
+/* ── STATS BAR ── */
+.stats-bar { background: var(--text); padding: 20px 28px; margin-top: 32px; }
+.stats-bar-inner {
+  max-width: 900px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+}
+.stat-item {
+  padding: 0 20px; text-align: center;
+  border-right: 0.5px solid rgba(255,255,255,0.1);
+}
+.stat-item:first-child { padding-left: 0; }
+.stat-item:last-child { border-right: none; padding-right: 0; }
+.stat-num {
+  font-family: var(--font-d); font-size: 26px; font-weight: 800;
+  color: #fff; line-height: 1; margin-bottom: 4px;
+}
+.stat-num.green { color: #5BCAA5; }
+.stat-num.red   { color: #E87070; }
+.stat-label { font-size: 11px; color: rgba(255,255,255,0.45); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ── MAIN ── */
+.main { max-width: 900px; margin: 0 auto; padding: 40px 28px 60px; }
+
+.section-hd {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 24px;
+}
+.section-hd h2 {
+  font-family: var(--font-d); font-size: 22px; font-weight: 800;
+  letter-spacing: -0.02em; color: var(--text);
+}
+.section-hd p { font-size: 13px; color: var(--text3); margin-top: 2px; }
+.last-updated { font-size: 12px; color: var(--text3); }
+
+/* ── LOT INFO CARD ── */
+.lot-info {
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg); padding: 20px 24px;
+  box-shadow: var(--shadow-sm); margin-bottom: 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  flex-wrap: wrap;
+}
+.lot-info-left { display: flex; align-items: center; gap: 14px; }
+.lot-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: var(--accent-bg); font-size: 24px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.lot-name { font-family: var(--font-d); font-size: 16px; font-weight: 700; color: var(--text); }
+.lot-id { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.lot-avail-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  font-family: var(--font-d);
+}
+.lot-avail-badge.good { background: var(--accent-bg); color: var(--accent-text); }
+.lot-avail-badge.low  { background: var(--amber-bg); color: var(--amber-text); }
+.lot-avail-badge.full { background: var(--red-bg); color: var(--red-text); }
+
+/* ── SLOTS GRID ── */
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.slot-card {
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.22s var(--ease), box-shadow 0.22s var(--ease), border-color 0.2s;
+  animation: fadeUp 0.4s var(--ease) both;
+  display: flex; flex-direction: column;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+.slot-card.free {
+  border-color: rgba(26,155,114,0.3);
+}
+.slot-card.free:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--accent);
+}
+.slot-card.occupied {
+  border-color: rgba(217,64,64,0.3);
+}
+.slot-card.occupied:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--red);
+}
+
+.slot-top {
+  padding: 28px 24px 20px;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  flex: 1;
+}
+.slot-number {
+  font-family: var(--font-d); font-size: 52px; font-weight: 800;
+  line-height: 1; letter-spacing: -0.04em;
+  transition: color 0.3s;
+}
+.slot-card.free .slot-number  { color: var(--accent); }
+.slot-card.occupied .slot-number { color: var(--red); }
+
+.slot-number-label {
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px;
+}
+
+.slot-status-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  flex-shrink: 0;
+}
+.slot-card.free .slot-status-badge {
+  background: var(--accent-bg); color: var(--accent-text);
+}
+.slot-card.occupied .slot-status-badge {
+  background: var(--red-bg); color: var(--red-text);
+}
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+}
+.slot-card.free .status-dot { background: var(--accent); animation: pulse 2s infinite; }
+.slot-card.occupied .status-dot { background: var(--red); }
+
+.slot-bottom {
+  padding: 14px 24px 18px;
+  border-top: 0.5px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.slot-id { font-size: 12px; color: var(--text3); font-weight: 500; }
+.slot-visual {
+  width: 36px; height: 22px; border-radius: 5px;
+  border: 1.5px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; transition: all 0.3s;
+}
+.slot-card.free .slot-visual { background: var(--accent-bg); border-color: var(--accent); }
+.slot-card.occupied .slot-visual { background: var(--red-bg); border-color: var(--red); }
+
+/* ── SKELETON ── */
+.skeleton-card {
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: var(--shadow-sm); padding: 28px 24px 18px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.skel {
+  background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%);
+  background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ── LEGEND ── */
+.legend {
+  display: flex; align-items: center; gap: 18px;
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 16px;
+  width: fit-content; box-shadow: var(--shadow-sm);
+}
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--text2); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+.legend-dot.free     { background: var(--accent); }
+.legend-dot.occupied { background: var(--red); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 999;
+  background: var(--text); color: var(--bg);
+  border-radius: 12px; padding: 12px 18px;
+  font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 8px;
+  transform: translateY(80px); opacity: 0;
+  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none; max-width: 300px; box-shadow: var(--shadow-lg);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 0.5px solid var(--border);
+  background: var(--surface); padding: 20px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px; color: var(--text3); flex-wrap: wrap; gap: 8px;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .nav { padding: 0 16px; }
+  .hero { padding: 40px 16px 24px; }
+  .stats-bar { padding: 16px; }
+  .stats-bar-inner { grid-template-columns: 1fr 1fr; gap: 4px; }
+  .stat-item { border-right: none; padding: 8px; }
+  .main { padding: 28px 16px 48px; }
+  .slots-grid { grid-template-columns: 1fr; }
+  .lot-info { flex-direction: column; align-items: flex-start; }
+  .section-hd { flex-direction: column; align-items: flex-start; gap: 8px; }
+  footer { flex-direction: column; text-align: center; }
+  .fb-status span { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg width="18" height="18" viewBox="0 0 18 18">
+        <rect x="1" y="1" width="7" height="7" rx="2"/>
+        <rect x="10" y="1" width="7" height="7" rx="2"/>
+        <rect x="1" y="10" width="7" height="7" rx="2"/>
+        <rect x="10" y="10" width="7" height="7" rx="2"/>
+      </svg>
+    </div>
+    <span class="nav-logo-name">Park<em>Flow</em></span>
+  </a>
+  <div class="nav-right">
+    <div class="fb-status" id="fbStatus">
+      <div class="fb-dot" id="fbDot"></div>
+      <span id="fbStatusText">Connecting…</span>
+    </div>
+    <button class="theme-btn" id="themeBtn" title="Toggle theme">🌙</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">
+    <div class="live-dot"></div>
+    Live — Slot 1011
+  </div>
+  <h1>Smart Parking<br><em>Real-time Slots.</em></h1>
+  <p class="hero-sub">Live occupancy data powered by IoT sensors. See which slots are free at a glance.</p>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-bar-inner">
+    <div class="stat-item">
+      <div class="stat-num" id="statTotal">4</div>
+      <div class="stat-label">Total Slots</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num green" id="statFree">—</div>
+      <div class="stat-label">Available</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num red" id="statOcc">—</div>
+      <div class="stat-label">Occupied</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="statPct">—</div>
+      <div class="stat-label">Occupancy</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <div class="section-hd">
+    <div>
+      <h2>Slot Overview</h2>
+      <p>Location 1011 · Hyderabad</p>
+    </div>
+    <span class="last-updated" id="lastUpdated">—</span>
+  </div>
+
+  <!-- Lot info card -->
+  <div class="lot-info" id="lotInfo">
+    <div class="lot-info-left">
+      <div class="lot-icon">🅿️</div>
+      <div>
+        <div class="lot-name">Parking Lot 1011</div>
+        <div class="lot-id">ID: 1011 · 4 slots monitored live</div>
+      </div>
+    </div>
+    <div class="lot-avail-badge good" id="lotBadge">
+      <div class="live-dot"></div>
+      Loading…
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div style="margin-bottom:20px;">
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot free"></div> Free</div>
+      <div class="legend-item"><div class="legend-dot occupied"></div> Occupied</div>
+    </div>
+  </div>
+
+  <!-- Slots grid -->
+  <div class="slots-grid" id="slotsGrid">
+    <!-- Skeletons -->
+    <div class="skeleton-card">
+      <div class="skel" style="height:52px;width:80px;"></div>
+      <div class="skel" style="height:12px;width:50%;"></div>
+      <div class="skel" style="height:1px;margin-top:8px;"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;">
+        <div class="skel" style="height:12px;width:60px;"></div>
+        <div class="skel" style="height:22px;width:36px;border-radius:5px;"></div>
+      </div>
+    </div>
+    <div class="skeleton-card">
+      <div class="skel" style="height:52px;width:80px;"></div>
+      <div class="skel" style="height:12px;width:45%;"></div>
+      <div class="skel" style="height:1px;margin-top:8px;"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;">
+        <div class="skel" style="height:12px;width:60px;"></div>
+        <div class="skel" style="height:22px;width:36px;border-radius:5px;"></div>
+      </div>
+    </div>
+    <div class="skeleton-card">
+      <div class="skel" style="height:52px;width:80px;"></div>
+      <div class="skel" style="height:12px;width:55%;"></div>
+      <div class="skel" style="height:1px;margin-top:8px;"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;">
+        <div class="skel" style="height:12px;width:60px;"></div>
+        <div class="skel" style="height:22px;width:36px;border-radius:5px;"></div>
+      </div>
+    </div>
+    <div class="skeleton-card">
+      <div class="skel" style="height:52px;width:80px;"></div>
+      <div class="skel" style="height:12px;width:50%;"></div>
+      <div class="skel" style="height:1px;margin-top:8px;"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;">
+        <div class="skel" style="height:12px;width:60px;"></div>
+        <div class="skel" style="height:22px;width:36px;border-radius:5px;"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div>© 2025 ParkFlow · Smart Parking for Hyderabad.</div>
+  <div>IoT-powered · Firebase Realtime DB</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  /* ─────────────────────────────────────────────────────
+     🔧 REPLACE WITH YOUR FIREBASE CONFIG
+     Firebase Console → Project Settings → Your Apps → SDK config
+  ───────────────────────────────────────────────────── */
+   const firebaseConfig = {
+  apiKey: "AIzaSyC0qJUWRa612kBJL86KADUm4SkMbc2Y0Mk",
+  authDomain: "smartparkingsystem-b6eea.firebaseapp.com",
+  databaseURL: "https://smartparkingsystem-b6eea-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "smartparkingsystem-b6eea",
+  storageBucket: "smartparkingsystem-b6eea.firebasestorage.app",
+  messagingSenderId: "1099500208137",
+  appId: "1:1099500208137:web:72e94c7ad0284e77c478d8",
+  measurementId: "G-GYY5WHEDHM"
+  };
+  /* ─────────────────────────────────────────────────────
+     DB structure expected:
+     /location/1011/Slot
+       AvbSlots: 4
+       slot1: "FREE" | "OCCUPIED"
+       slot2: "FREE" | "OCCUPIED"
+       slot3: "FREE" | "OCCUPIED"
+       slot4: "FREE" | "OCCUPIED"
+  ───────────────────────────────────────────────────── */
+
+  function setStatus(state, msg) {
+    const dot = document.getElementById('fbDot');
+    const txt = document.getElementById('fbStatusText');
+    if (state === 'connected') { dot.className = 'fb-dot connected'; txt.textContent = msg || 'Live'; }
+    else if (state === 'error') { dot.className = 'fb-dot error'; txt.textContent = msg || 'Error'; }
+    else { dot.className = 'fb-dot'; txt.textContent = msg || 'Connecting…'; }
+  }
+
+  function isFree(val) {
+    if (!val) return true;
+    return String(val).trim().toUpperCase() === 'FREE';
+  }
+
+  function renderSlots(slotData) {
+    const grid = document.getElementById('slotsGrid');
+    const slots = [1, 2, 3, 4];
+    let freeCount = 0;
+
+    const cards = slots.map((num, idx) => {
+      const key = `slot${num}`;
+      const val = slotData[key];
+      const free = isFree(val);
+      if (free) freeCount++;
+      const cls = free ? 'free' : 'occupied';
+      const label = free ? 'Available' : 'Occupied';
+      const emoji = free ? '🟢' : '🔴';
+      return `
+      <div class="slot-card ${cls}" style="animation-delay:${idx * 0.08}s">
+        <div class="slot-top">
+          <div>
+            <div class="slot-number">${num}</div>
+            <div class="slot-number-label">Slot</div>
+          </div>
+          <div class="slot-status-badge">
+            <div class="status-dot"></div>
+            ${label}
+          </div>
+        </div>
+        <div class="slot-bottom">
+          <div class="slot-id">ID: slot${num} · Lot 1011</div>
+          <div class="slot-visual">${emoji}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    grid.innerHTML = cards;
+
+    // Update stats
+    const occCount = 4 - freeCount;
+    const pct = Math.round((occCount / 4) * 100);
+    document.getElementById('statFree').textContent = freeCount;
+    document.getElementById('statOcc').textContent = occCount;
+    document.getElementById('statPct').textContent = pct + '%';
+
+    // Lot badge
+    const badge = document.getElementById('lotBadge');
+    if (freeCount === 0) {
+      badge.className = 'lot-avail-badge full';
+      badge.innerHTML = '<div class="status-dot" style="background:var(--red);width:6px;height:6px;border-radius:50%;"></div> Full';
+    } else if (freeCount <= 1) {
+      badge.className = 'lot-avail-badge low';
+      badge.innerHTML = '<div class="live-dot"></div> ' + freeCount + ' slot left';
+    } else {
+      badge.className = 'lot-avail-badge good';
+      badge.innerHTML = '<div class="live-dot"></div> ' + freeCount + ' slots free';
+    }
+
+    // Last updated
+    const now = new Date();
+    document.getElementById('lastUpdated').textContent =
+      'Updated ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  function loadFallback() {
+    // Demo data if Firebase is not configured
+    renderSlots({ slot1: 'FREE', slot2: 'FREE', slot3: 'OCCUPIED', slot4: 'FREE' });
+    document.getElementById('statFree').textContent = '3';
+    document.getElementById('statOcc').textContent = '1';
+    showToast('Demo mode — connect Firebase to see live data');
+  }
+
+  function initFirebase() {
+    try {
+      if (firebaseConfig.apiKey === 'YOUR_API_KEY') {
+        setStatus('error', 'Demo mode');
+        loadFallback();
+        return;
+      }
+      const app = initializeApp(firebaseConfig);
+      const db  = getDatabase(app);
+      const slotRef = ref(db, '/location/1011/Slot');
+
+      setStatus('connecting', 'Connecting…');
+
+      onValue(slotRef, (snapshot) => {
+        const data = snapshot.val();
+        if (!data) {
+          setStatus('error', 'No data');
+          loadFallback();
+          return;
+        }
+        setStatus('connected', 'Live');
+        renderSlots(data);
+      }, (err) => {
+        console.warn('Firebase error:', err);
+        setStatus('error', 'DB error');
+        loadFallback();
+      });
+    } catch (e) {
+      console.warn('Firebase init failed:', e);
+      setStatus('error', 'Config error');
+      loadFallback();
+    }
+  }
+
+  window.showToast = function(msg, dur = 3500) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), dur);
+  };
+
+  initFirebase();
+</script>
+
+<script>
+  // Theme
+  (function() {
+    const saved = localStorage.getItem('pf-theme');
+    if (saved === 'dark') {
+      document.body.setAttribute('data-theme', 'dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.getElementById('themeBtn').textContent = '☀️';
+    }
+  })();
+
+  document.getElementById('themeBtn').addEventListener('click', function() {
+    const isDark = document.body.getAttribute('data-theme') === 'dark';
+    const next = isDark ? '' : 'dark';
+    document.body.setAttribute('data-theme', next);
+    document.documentElement.setAttribute('data-theme', next);
+    this.textContent = next === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('pf-theme', next || 'light');
+  });
+</script>
+</body>
+</html>
