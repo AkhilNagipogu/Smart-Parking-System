@@ -22,11 +22,11 @@
 //------servo---------
 #define servoPin 13
 //--------------Wifi_config------------
-#define WIFI_SSID "Akhil's M35"
-#define WIFI_PASSWORD "AK@18255"
+#define WIFI_SSID ".............."
+#define WIFI_PASSWORD "................"
 //---------------FireBase--------------
-#define DATABASE_URL "smartparkingsystem-b6eea-default-rtdb.asia-southeast1.firebasedatabase.app" 
-#define DATABASE_SECRET "NoSlzwEO3IUOLWN1v8O4SdJLb0SsNJLMCOQKDDMD"
+#define DATABASE_URL "..................." 
+#define DATABASE_SECRET "............................"
 
 
 // Variables
