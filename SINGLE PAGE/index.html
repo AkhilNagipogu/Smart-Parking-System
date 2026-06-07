@@ -376,7 +376,7 @@ footer {
         <rect x="10" y="10" width="7" height="7" rx="2"/>
       </svg>
     </div>
-    <span class="nav-logo-name">Park<em>Flow</em></span>
+    <span class="nav-logo-name">Website<em>Name</em></span>
   </a>
   <div class="nav-right">
     <div class="fb-status" id="fbStatus">
@@ -391,7 +391,7 @@ footer {
 <div class="hero">
   <div class="hero-tag">
     <div class="live-dot"></div>
-    Live — Slot 1011
+    Live — Slot
   </div>
   <h1>Smart Parking<br><em>Real-time Slots.</em></h1>
   <p class="hero-sub">Live occupancy data powered by IoT sensors. See which slots are free at a glance.</p>
@@ -507,24 +507,10 @@ footer {
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-  /* ─────────────────────────────────────────────────────
-     🔧 REPLACE WITH YOUR FIREBASE CONFIG
-     Firebase Console → Project Settings → Your Apps → SDK config
-  ───────────────────────────────────────────────────── */
+  
    const firebaseConfig = {
-
      //API
   };
-  /* ─────────────────────────────────────────────────────
-     DB structure expected:
-     /location/1011/Slot
-       AvbSlots: 4
-       slot1: "FREE" | "OCCUPIED"
-       slot2: "FREE" | "OCCUPIED"
-       slot3: "FREE" | "OCCUPIED"
-       slot4: "FREE" | "OCCUPIED"
-  ───────────────────────────────────────────────────── */
 
   function setStatus(state, msg) {
     const dot = document.getElementById('fbDot');
